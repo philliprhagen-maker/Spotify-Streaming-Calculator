@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spotify Stream Calculator</title>
+  <style>
+    :root {
+      --spotify-green: #1DB954;
+      --spotify-black: #191414;
+      --spotify-gray: #282828;
+      --text-light: #fff;
+      --text-muted: #b3b3b3;
+    }
+
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background: linear-gradient(135deg, #191414 0%, #000000 100%);
+      color: var(--text-light);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    h1 {
+      font-weight: 700;
+      font-size: 2rem;
+      text-align: center;
+      margin: 30px 0 10px;
+      letter-spacing: 1px;
+      background: linear-gradient(90deg, #1DB954, #38ef7d);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 10px rgba(29, 185, 84, 0.2);
+    }
+
+    .ad-banner {
+      width: 95%;
+      max-width: 728px;
+      height: 90px;
+      background: rgba(255,255,255,0.08);
+      color: #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 10px 0;
+      border: 1px dashed #444;
+      font-size: 0.85rem;
+      letter-spacing: 1px;
+      border-radius: 10px;
+    }
+
+    .container {
+      background: var(--spotify-gray);
+      padding: 30px;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 420px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    label {
+      font-weight: 500;
+      margin-top: 10px;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 6px;
+      border: none;
+      background: #222;
+      color: var(--text-light);
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    input:focus, select:focus {
+      background: #333;
+      box-shadow: 0 0 5px var(--spotify-green);
+    }
+
+    button {
+      width: 100%;
+      margin-top: 15px;
+      padding: 14px;
+      background: var(--spotify-green);
+      color: var(--spotify-black);
+      border: none;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    button:hover {
+      background: #22cc5e;
+      transform: translateY(-1px);
+      box-shadow: 0 0 10px rgba(29, 185, 84, 0.6);
+    }
+
+    .result {
+      text-align: center;
+      margin-top: 25px;
+      font-size: 1.4rem;
+      color: var(--spotify-green);
+      text-shadow: 0 0 5px rgba(29,185,84,0.5);
+      animation: popIn 0.5s ease-out;
+    }
+
+    footer {
+      text-align: center;
+      margin: 30px 0;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.95); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .ad-banner {
+        height: 70px;
+        font-size: 0.75rem;
+      }
+      h1 { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Ad Banner -->
+  <div class="ad-banner">Ad Space — Top Banner (728×90)</div>
+
+  <h1>Spotify Stream Calculator</h1>
+
+  <div class="container">
+    <label for="streams">Number of Streams</label>
+    <input type="number" id="streams" placeholder="Enter stream count" min="0">
+
+    <label for="region">Listener Location</label>
+    <select id="region">
+      <option value="us">United States 🇺🇸</option>
+      <option value="uk">United Kingdom 🇬🇧</option>
+      <option value="eu">Europe 🇪🇺</option>
+      <option value="asia">Asia 🌏</option>
+      <option value="latam">Latin America 🌎</option>
+      <option value="aus">Australia 🇦🇺</option>
+    </select>
+
+    <label for="currency">Display Currency</label>
+    <select id="currency">
+      <option value="USD">USD ($)</option>
+      <option value="EUR">EUR (€)</option>
+      <option value="GBP">GBP (£)</option>
+      <option value="AUD">AUD (A$)</option>
+    </select>
+
+    <button onclick="calculateRevenue()">Calculate Earnings</button>
+
+    <!-- Inline Ad -->
+    <div class="ad-banner" style="height: 60px; margin-top: 20px;">
+      Ad Space — Inline Banner (468×60)
+    </div>
+
+    <div class="result" id="result">💰</div>
+  </div>
+
+  <!-- Bottom Ad Banner -->
+  <div class="ad-banner">Ad Space — Bottom Banner (728×90)</div>
+
+  <footer>
+    Estimated averages only — actual Spotify payouts vary by label & listener type.
+  </footer>
+
+  <script>
+    // Hidden payout rates (USD)
+    const payoutRates = {
+      us: 0.004,      // United States
+      uk: 0.003,      // United Kingdom
+      eu: 0.0025,     // Europe
+      asia: 0.0015,   // Asia
+      latam: 0.001,   // Latin America
+      aus: 0.005      // Australia
+    };
+
+    // Fetch exchange rates from Frankfurter API
+    async function getExchangeRates(base = 'USD') {
+      try {
+        const res = await fetch(`https://api.frankfurter.app/latest?from=${base}`);
+        if (!res.ok) throw new Error("Failed to fetch exchange rates");
+        const data = await res.json();
+        return data.rates;
+      } catch (err) {
+        console.error(err);
+        alert("⚠️ Unable to fetch currency rates. Using USD only.");
+        return { USD: 1 };
+      }
+    }
+
+    async function calculateRevenue() {
+      const streams = parseFloat(document.getElementById('streams').value);
+      const region = document.getElementById('region').value;
+      const currency = document.getElementById('currency').value;
+      const resultDiv = document.getElementById('result');
+
+      if (isNaN(streams) || streams <= 0) {
+        resultDiv.textContent = "⚠️ Please enter a valid number of streams.";
+        return;
+      }
+
+      const rate = payoutRates[region] || 0.004;
+      const usdRevenue = streams * rate;
+
+      const rates = await getExchangeRates('USD');
+      const converted = usdRevenue * (rates[currency] || 1);
+
+      const symbols = { USD: '$', EUR: '€', GBP: '£', AUD: 'A$' };
+      resultDiv.innerHTML = `Estimated Earnings:<br><strong>${symbols[currency]}${converted.toFixed(2)} ${currency}</strong>`;
+    }
+  </script>
+</body>
+</html>
